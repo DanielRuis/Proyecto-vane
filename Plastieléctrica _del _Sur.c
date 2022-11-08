@@ -63,9 +63,10 @@ int main(){
             break;
         }
     }
+    return 0;
 }
 
-int menuCliente(){
+menuCliente(){
     int menu;
     char txt[5];
     clock_t begin;
@@ -117,7 +118,13 @@ int menuCliente(){
         break;
         //*añadir
         case 4:
-            
+            begin=clock();
+            sprintf(txt,"4");
+            write(fd2,txt,sizeof(txt));
+            close(fd2);
+            addCliente();
+            end=clock();
+            tiempo+=(double)(end-begin)/CLOCKS_PER_SEC;
         break;
         //*Actualizar
         case 5:
@@ -134,7 +141,7 @@ int menuCliente(){
 }
 
 //?Mostrar clientes
-int showClientes(){
+showClientes(){
     char cad[2024];
     fd2=open("lista1",O_RDONLY);
     read(fd2,cad,2024);
@@ -166,7 +173,26 @@ showOneCliente(){
 }
 
 addCliente(){
-    
+    char name[100];
+    char sql[1024];
+    int typecli;
+    printf("*******Agregar Cliente********* \n");
+    printf("-------------------------------\n");
+    printf("Nombre\n");
+    scanf("%s",&name);
+    //*>Hacemos mayusculas
+    for (int indice = 0; name[indice] != '\0'; ++indice){
+		name[indice] = toupper(name[indice]);
+	}
+    printf("---->Solicitud de credito?\n");
+    printf("-1:No\n");
+    printf("-2:Si\n");
+    scanf("%i",&typecli);
+    //INSERT INTO CLIENTES (nombre, id_typecli) values (s,i)
+    sprintf(sql,"%i,'%s'",typecli,name);
+    fd2=open("sqldata",O_WRONLY);
+    write(fd2,sql,sizeof(sql));
+    close(fd2);
 }
 
 

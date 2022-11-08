@@ -18,6 +18,7 @@ char *passwd = "31342522";
 int i,j,fd1,fd2,sqldata,menu;
 char txt[5],sql[1234];
 //*funciones:Cliente
+void sqlacction();
 int addCliente();
 int updateCliente();
 int showCliente();
@@ -53,7 +54,7 @@ int main(){
                 showOneCliente();//*->Mostrar a un solo cliente
             break;
             case 4:
-                //addCliente();//*->Añadir Cliente
+                addCliente();//*->Añadir Cliente
             break;
             case 5:
                 //showCliente();
@@ -81,6 +82,7 @@ int showAllCliente(int m){
     switch(m){
         case 1:
             result=PQexec(con, "select * from clientes");
+            strcat(cad,"ID\t\tTIPO\t\tNOMBRE\t\tFECHAINI\t\tDEUDA($)\tCRED($)\t\tFECHDES(M)\n");
         break;
         case 2:
             result=PQexec(con, "select id_cliente, nombre, credito, deuda from clientes where id_typecli=2");
@@ -158,4 +160,24 @@ int showOneCliente(){
     }
     close(fd1);//*Cerramos a fd1
     PQfinish(con);//*Cerramos conexion
+    return 0;
+}
+
+addCliente(){
+    //*Se inicia conexion
+    con = PQsetdbLogin(host,port,NULL,NULL,dataBase,user,passwd);//*abro conexion 
+    char sql[1024], cad[1024];
+    //*Limpiamos cadenas
+    sprintf(cad,"");
+    sprintf(sql,"");
+
+    mkfifo("sqldata",0666);//*->Recreamos el sqldata
+    fd2=open("sqldata",O_RDONLY);//*->Abrimos para lectura
+    read(fd2,cad,sizeof(cad));
+    close(fd2);//*->Cerramos
+
+    sprintf(sql,"insert into clientes (id_typecli,nombre) values(%s)",cad);
+    PQexec(con,sql);
+    PQfinish(con);
+
 }
