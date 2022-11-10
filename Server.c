@@ -16,9 +16,10 @@ char *user = "postgres";
 char *passwd = "31342522";
 //*variables globales
 int i,j,fd1,fd2,sqldata,menu;
-char txt[5],sql[1234];
+char txt[5],sql[1234],idcli[10],deuda[100];
 //*funciones:Cliente
-void sqlacction();
+void deleteop();
+void updateop();
 int addCliente();
 int updateCliente();
 int showCliente();
@@ -29,7 +30,8 @@ int showOneCliente();
 //!Funcion principal
 int main(){
     while(1){
-        //*borramos los archivos 
+        //*borramos los archivos
+        sprintf(deuda,"0"); 
         remove("/home/dano/Documentos/7mo/SO/ProyectoFinal/lista1");
         remove("/home/dano/Documentos/7mo/SO/ProyectoFinal/menu");
         mkfifo("lista1",0666);
@@ -42,7 +44,6 @@ int main(){
         switch(menu){
             //!Seccion de clientes del 1-5
             case 1:
-                
                 printf("Entra a mostrar clientes\n");
                 showAllCliente(menu);//*->Mostrar lista de clientes detallado
             break;
@@ -57,11 +58,17 @@ int main(){
                 addCliente();//*->Añadir Cliente
             break;
             case 5:
-                //showCliente();
-                //updateCliente();//*->Actualizar cliente
+                showOneCliente();
+                updateop(1);//*->Actualizar cliente
             break;
             case 6:
-                //deleteCliente();//*->Borrar cliente
+                showOneCliente();
+                deleteop(1);//*->Borrar cliente
+            break;
+            //!------Seccion de articulos
+
+            case 7:
+
             break;
         }
 
@@ -98,6 +105,7 @@ int showAllCliente(int m){
         for (i = 0; i < PQntuples(result); i++){ 
             for (j = 0; j < PQnfields(result); j++){
                 sprintf(bf,"%s\t\t",PQgetvalue(result,i,j));
+                
                 strcat(cad,bf);   
             } 
             strcat(cad,"\n");
@@ -125,7 +133,7 @@ int showOneCliente(){
     sprintf(idcad,"");
     sprintf(sqlcad,"");
     sprintf(bf,"");
-    printf("Servicio de mostrar a todos los clientes\n");
+    printf("Servicio de mostrar a un cliente\n");
 
     //*Se inicia conexion
     con = PQsetdbLogin(host,port,NULL,NULL,dataBase,user,passwd);//*abro conexion   
@@ -134,6 +142,7 @@ int showOneCliente(){
     fd2=open("IdCliente",O_RDONLY);
     read(fd2,idcad,sizeof(idcad));//*->Hacemos lectura dek id
     close(fd2);//*Cerramos el canal fd2
+    sprintf(idcli,"%s",idcad);
     //printf("%s\n",idcad);
 
     //*Se realiza la instruccion sql
@@ -143,10 +152,16 @@ int showOneCliente(){
     fd1=open("lista2",O_WRONLY);//*Abrimos como escritura con fd1
     //*Se junta los datos
     if(PQntuples(result)!=0){
+        strcat(cad,"ID\t\tTIPO\t\tNOMBRE\t\tFECHAINI\t\tDEUDA($)\tCRED($)\t\tFECHDES(M)\n");
         //?Si encuentra al cliente entra
         
         for (j = 0; j < PQnfields(result); j++){
             sprintf(bf,"%s\t\t",PQgetvalue(result,0,j));
+            printf("->%i--%s\n",j,PQgetvalue(result,0,j));
+            if(j==4){
+                sprintf(deuda,"%s",PQgetvalue(result,0,j));
+                printf("Deuda:%s\n",deuda);
+            }
             strcat(cad,bf);   
         } 
         strcat(cad,"\n");
@@ -162,7 +177,7 @@ int showOneCliente(){
     PQfinish(con);//*Cerramos conexion
     return 0;
 }
-
+//?Añadir cliente
 addCliente(){
     //*Se inicia conexion
     con = PQsetdbLogin(host,port,NULL,NULL,dataBase,user,passwd);//*abro conexion 
@@ -177,7 +192,101 @@ addCliente(){
     close(fd2);//*->Cerramos
 
     sprintf(sql,"insert into clientes (id_typecli,nombre) values(%s)",cad);
+    PQexec(con,sql);//!Se ejecunta sql INSERT
+    sprintf(sql,"select credito((select max(id_cliente) from clientes))");
     PQexec(con,sql);
-    PQfinish(con);
+    sprintf(sql,"select f_descuento((select max(id_cliente) from clientes))");
+    PQexec(con,sql);
+    PQfinish(con);//*Cerramos con
+}
 
+//?Actualizar
+updateop(int op){
+    //*Se inicia conexion
+    con = PQsetdbLogin(host,port,NULL,NULL,dataBase,user,passwd);//*abro conexion 
+    char sql[1024], cad[1024],menu[10];
+    int menup;
+    //*Limpiamos cadenas
+    sprintf(cad,"");
+    sprintf(sql,"");
+    mkfifo("menuupdate",0666);
+    mkfifo("mensaje",0666);
+    mkfifo("sqldata",0666);//*->Recreamos el sqldata
+    //*Seleccion de actualizacion
+    switch(op){
+        //todo:Actualiza clientes-------------------------------------
+        case 1:
+            //*Switch para el menu de actualizar clientes
+            fd2=open("menuupdate",O_RDONLY);//*->Abrimos para lectura
+            read(fd2,menu,sizeof(menu));
+            close(fd2);
+            menup=atoi(menu);
+            printf("%i\n",menup);
+            switch(menup){
+                //*Actualizar la solicitud de credito
+                case 1:
+                    sprintf(sql,"update clientes set id_typecli=2 where id_cliente=%s",idcli);
+                    printf("%s\n",sql);
+                    PQexec(con,sql);
+                    sprintf(sql,"select credito(%s)",idcli);
+                    PQexec(con,sql);
+                    
+                break;
+                //*Actualizar el nombre
+                case 2:
+                   mkfifo("data",0666);
+                   fd1=open("data",O_RDONLY);
+                   read(fd1,cad,sizeof(cad));
+                   close(fd1);
+                   sprintf(sql,"update clientes set nombre='%s' where id_cliente=%s",cad,idcli);
+                   PQexec(con,sql);
+                   
+                break;
+                //*Actualizar la deuda(solver o reducir)
+                case 3:
+                    mkfifo("data",0666);
+                    fd1=open("data",O_WRONLY);
+                    write(fd1,deuda,sizeof(deuda));
+                    close(fd1);
+                    mkfifo("newdata",0666);
+                    fd2=open("newdata",O_RDONLY);
+                    read(fd2,cad,sizeof(cad));
+                    close(fd2);
+                    sprintf(sql,"update clientes set deuda=%s where id_cliente=%s",cad, idcli);
+                    printf("%s\n",sql);
+                    PQexec(con,sql);
+                    
+                break;
+                case 10:
+                    printf("-->No ingreso cliente correcto\n");
+                break;
+            }
+            sprintf(idcli,"");
+
+
+        break;
+    }
+}
+
+//?Borrar
+deleteop(int op){
+    //*Se inicia conexion
+    con = PQsetdbLogin(host,port,NULL,NULL,dataBase,user,passwd);//*abro conexion 
+    char sql[1024], cad[1024],menu[10];
+    int menup;
+    //*Limpiamos cadenas
+    sprintf(cad,"");
+    sprintf(sql,"");
+    mkfifo("menuupdate",0666);
+    mkfifo("mensaje",0666);
+    mkfifo("sqldata",0666);//*->Recreamos el sqldata
+    //*Seleccion de borrado
+    switch(op){
+        //*borrar cliente
+        case 1:
+            sprintf(sql,"delete from clientes where id_cliente=%s",idcli);
+            printf("%s\n",sql);
+            PQexec(con,sql);
+        break;
+    }
 }
