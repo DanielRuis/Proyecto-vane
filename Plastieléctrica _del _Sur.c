@@ -12,14 +12,19 @@
 
 int menuCliente();
 int menuArticulos();
-int menuVentas();
-int showClientes();
+int showdata();
 int showOneCliente();
 int addCliente();
 int updateCliente();
 int deleteCliente();
-void addarti();
-
+int addarti();
+int updateArticulo();
+int deleteArticulo();
+int updateInventario();
+int menuVentas();
+int venta();
+int showOneVenta();
+int showODV();
 //*inicializacion de variables
 int fd1,fd2,fde=0,i,x;
 double tiempo=0.0;
@@ -49,11 +54,11 @@ int main(){
             break;
             //*Articulos
             case 2:
-                //menuArticulos();
+                menuArticulos();
             break;
             //*Ventas
             case 3:
-                //menuVentas();
+                menuVentas();
             break;
             //*Salir
             case 4:
@@ -95,7 +100,7 @@ menuCliente(){
             sprintf(txt,"1");
             write(fd2,txt,sizeof(txt));
             close(fd2);
-            showClientes();
+            showdata(1);
             end=clock();
             tiempo+=(double)(end-begin)/CLOCKS_PER_SEC;
         break;
@@ -104,7 +109,7 @@ menuCliente(){
             sprintf(txt,"2");
             write(fd2,txt,sizeof(txt));
             close(fd2);
-            showClientes();
+            showdata(1);
             end=clock();
             tiempo+=(double)(end-begin)/CLOCKS_PER_SEC;
         break;
@@ -160,12 +165,22 @@ menuCliente(){
 }
 
 //?Mostrar clientes
-showClientes(){
+showdata(int i){
     char cad[2024];
     fd2=open("lista1",O_RDONLY);
     read(fd2,cad,2024);
     close(fd2);
-    printf("--------------------CLIENTES--------------------------\n");
+    if(i==1){
+        printf("--------------------CLIENTES--------------------------\n");
+    }else if(i==2){
+        printf("--------------------ARTICULOS--------------------------\n");
+    }else if(i==3){
+        printf("--------------------INVENTARIO--------------------------\n");
+    }else if(i==4){
+        printf("--------------------VENTAS--------------------------\n");
+    }else if(i==5){
+        printf("--------------------FACTURAS--------------------------\n");
+    } 
     printf("%s\n",cad);
     
 }
@@ -384,7 +399,7 @@ deleteCliente(){
 
 //?-----Seccion de articulos------------
 menuArticulos(){
-     int menu;
+    int menu;
     char txt[5];
     clock_t begin;
     clock_t end;
@@ -396,40 +411,42 @@ menuArticulos(){
     printf("|2-Lista de inventario             |\n");
     printf("|3-Datos de un articulo            |\n");
     printf("|4-Añadir                          |\n");
-    printf("|5-Actualizar                      |\n");
-    printf("|6-Borrar                          |\n");
-    printf("|7-Salir                           |\n");
+    printf("|5-Actualizar Articulos            |\n");
+    printf("|6-Actualizar Inventario           |\n");
+    printf("|7-Borrar                          |\n");
+    printf("|8-Salir                           |\n");
     printf("------------------------------------\n");
     scanf("%i",&menu);
     fd2=open("menu1",O_WRONLY);
     switch(menu){
         
-        //*Lista de clientes 
+        //*Lista de articulos 
         case 1:
             begin=clock();
             sprintf(txt,"7");
             write(fd2,txt,sizeof(txt));
             close(fd2);
-            showClientes();
+            showdata(2);
             end=clock();
             tiempo+=(double)(end-begin)/CLOCKS_PER_SEC;
         break;
+        //*lista de inventario
         case 2:
             begin=clock();
             sprintf(txt,"8");
             write(fd2,txt,sizeof(txt));
             close(fd2);
-            showClientes();
+            showdata(3);
             end=clock();
             tiempo+=(double)(end-begin)/CLOCKS_PER_SEC;
         break;
-        //*Datos de un cliente
+        //*Datos de un articulo
         case 3:
             begin=clock();
             sprintf(txt,"9");
             write(fd2,txt,sizeof(txt));
             close(fd2);
-            showOneCliente();
+            showOneArticulo();
             end=clock();
             tiempo+=(double)(end-begin)/CLOCKS_PER_SEC;
         break;
@@ -439,7 +456,7 @@ menuArticulos(){
             sprintf(txt,"10");
             write(fd2,txt,sizeof(txt));
             close(fd2);
-            addCliente();
+            addarti();
             end=clock();
             tiempo+=(double)(end-begin)/CLOCKS_PER_SEC;
         break;
@@ -449,23 +466,404 @@ menuArticulos(){
             sprintf(txt,"11");
             write(fd2,txt,sizeof(txt));
             close(fd2);
-            updateCliente();
+            updateArticulo();
             printf("Cierra update\n");
             end=clock();
             tiempo+=(double)(end-begin)/CLOCKS_PER_SEC;
         break;
-        //*borrar
         case 6:
             begin=clock();
             sprintf(txt,"12");
             write(fd2,txt,sizeof(txt));
             close(fd2);
-            deleteCliente();
+            updateInventario();
+            printf("Cierra update\n");
+            end=clock();
+            tiempo+=(double)(end-begin)/CLOCKS_PER_SEC;
+
+        break;
+        //*borrar
+        case 7:
+            begin=clock();
+            sprintf(txt,"13");
+            write(fd2,txt,sizeof(txt));
+            close(fd2);
+            deleteArticulo();
             end=clock();
             tiempo+=(double)(end-begin)/CLOCKS_PER_SEC;
         break;
         //*regresar al menu principal
+        case 8:
+            printf("||||||....Regresando al menu principal.....|||||\n");
+        break;
+    }
+    
+        printf("\n-----------------------\nTiempo de ejecucion:%f\n", tiempo);
+
+}
+//*Muestra un solo articulo
+void showOneArticulo(){
+    char idcad[10],cad[2024];
+    int idcli;
+    sprintf(idcad,"");
+    
+    printf("Inserte el id del articulo:");
+    scanf("%i",&idcli);
+    sprintf(idcad,"%i",idcli);
+
+    fd2=open("IdArticulo",O_WRONLY);
+    write(fd2,idcad,sizeof(idcad));
+    close(fd2);
+
+    fd1=open("lista2",O_RDONLY);
+    read(fd1,cad,sizeof(cad));
+    close(fd1);
+    printf("--------------------DATOS DEL ARTICULO %i--------------------------\n",idcli);
+    printf("%s\n",cad);
+    return 0;
+}
+addarti(){
+    char cad[2024],name[50],marca[50],descri[50],precio[10],cad2[2];
+    int op;
+    sprintf(cad,"");
+    sprintf(name,"");
+    printf("Coloque el nombre del articulo\n");
+    scanf("%s",&name);
+    printf("Coloque la marca del articulo\n");
+    scanf("%s",&marca);
+    printf("Coloque el tipo de articulo\n");
+    scanf("%s",&descri);
+    printf("Coloque el precio del articulo\n$");
+    scanf("%s",&precio);
+
+    fd2=open("sqldata",O_WRONLY);
+    write(fd2,name,sizeof(name));
+    close(fd2);
+
+    fd1=open("mensaje",O_RDONLY);
+    read(fd1,cad2,sizeof(cad2));
+    close(fd1);
+
+    if((op=atoi(cad2))==1){
+        printf("Articulo agregado\n");
+        sprintf(cad,"'%s','%s','%s',%s",name,marca,descri,precio);
+        fd2=open("sqldata",O_WRONLY);
+        write(fd2,cad,sizeof(cad));
+        close(fd2);
+    }else if((op=atoi(cad2))==2){
+        printf("Articulo ya existente\n");
+    }
+}
+//*Actualizar articulo
+updateArticulo(){
+    char data[50],sql[1024],idcad[10],menu[5],cad[1024],cad2[1024],deuda[100];
+    int c1, c2,c3,m;
+    float de,abo,res;
+    sprintf(idcad,"");//*LImpiamos cadena
+    sprintf(menu,"");//*LImpiamos cadena
+    sprintf(cad2,"No vendemos el articulo que busca\n");
+
+    printf("*******Actualizar Articulo*********\n");
+    printf("-----------------------------------\n");
+    printf("Inserte el id del articulo:");
+    scanf("%s",&idcad);
+
+    fd2=open("IdArticulo",O_WRONLY);
+    write(fd2,idcad,sizeof(idcad));
+    close(fd2);
+
+    fd1=open("lista2",O_RDONLY);
+    read(fd1,cad,sizeof(cad));
+    close(fd1);
+    printf("--------------------DATOS DEL ARTICULO %s--------------------------\n",idcad);
+    printf("%s\n",cad);
+    //sprintf(cad2,"%s",cad);
+    for (int indice = 0; cad[indice] != '\0'; ++indice){
+		c1=indice;
+	}
+    for (int indice = 0; cad2[indice] != '\0'; ++indice){
+		c2=indice;
+	}
+
+    printf("C1:%i-----C2:%i\n",c1,c2);
+
+
+    //*Si hay un cliente manda al servidor la indicacion del menu
+    fd2=open("menuupdate",O_WRONLY);
+    if(c1!=c2){
+        printf("****Actualizar Articulo***** \n");
+        printf("-------------------------\n");
+        printf("|1-Nombre                |\n");
+        printf("|2-Marca                 |\n");
+        printf("|3-Descripcion           |\n");
+        printf("|4-Precio                |\n");
+        printf("--------------------------\n");
+        scanf("%i",&m);
+        sprintf(menu,"%i",m);
+        write(fd2,menu,sizeof(menu));
+        close(fd2);
+        
+        //*Switch para el menu de la actualizacion
+        if(m>=1 && m<5){
+            printf("Coloque el nuevo dato\n");
+            scanf("%s",&data);
+            for (int indice = 0; data[indice] != '\0'; ++indice){
+		        data[indice] = toupper(data[indice]);
+	        }
+            fd1=open("data",O_WRONLY);
+            write(fd1,data,sizeof(data));
+            close(fd1);
+        }else{
+            printf("Funcion erronea\n");
+            sprintf(menu,"10");
+            write(fd2,menu,sizeof(menu));
+            close(fd2);
+        }
+
+
+        
+    }else if(strcmp(cad,cad2)==0){
+        sprintf(menu,"10");
+        write(fd2,menu,sizeof(menu));
+        close(fd2);
+    }
+    
+    
+    
+}
+//*Actualizar inventario
+updateInventario(){
+    char data[50],sql[1024],idcad[10],menu[5],cad[1024],cad2[1024],inv[100];
+    int c1, c2,c3,m,actual,new,res;
+    
+    sprintf(idcad,"");//*LImpiamos cadena
+    sprintf(menu,"");//*LImpiamos cadena
+    sprintf(cad2,"No vendemos el articulo que busca\n");
+
+    printf("*******Actualizar INVENTARIO*********\n");
+    printf("-----------------------------------\n");
+    printf("Inserte el id del INVENTARIO:");
+    scanf("%s",&idcad);
+
+    fd2=open("IdArticulo",O_WRONLY);
+    write(fd2,idcad,sizeof(idcad));
+    close(fd2);
+
+    fd1=open("lista2",O_RDONLY);
+    read(fd1,cad,sizeof(cad));
+    close(fd1);
+    printf("--------------------DATOS DEL INVENTARIO %s--------------------------\n",idcad);
+    printf("%s\n",cad);
+    //sprintf(cad2,"%s",cad);
+    for (int indice = 0; cad[indice] != '\0'; ++indice){
+		c1=indice;
+	}
+    for (int indice = 0; cad2[indice] != '\0'; ++indice){
+		c2=indice;
+	}
+
+    //*Si hay un cliente manda al servidor la indicacion del menu
+    fd2=open("menuupdate",O_WRONLY);
+    if(c1!=c2){
+        printf("****Actualizar INVENTARIO***** \n");
+        printf("-------------------------\n");
+        printf("|1-Dar de alta           |\n");
+        printf("|2-Dar de baja           |\n");
+        printf("--------------------------\n");
+        scanf("%i",&m);
+        sprintf(menu,"1",1);
+        write(fd2,menu,sizeof(menu));
+        close(fd2);
+        //leemos la cantidad de inventario
+        fd1=open("data",O_RDWR);
+        read(fd1,inv,sizeof(inv));
+        close(fd1);
+        actual=atoi(inv);
+        switch(m){
+            case 1:
+                printf("Coloque el inventario a agregar\n");
+                scanf("%i",&new);
+                res=actual+new;
+            break;
+            
+            case 2:
+                printf("Coloque el inventario a dar de baja\n");
+                scanf("%i",&new);
+                if(new>actual){
+                    printf("No se puede eliminar más de lo que hay\n");
+                    m=10;
+                }else{
+                    res=actual-new;
+                }
+            break;
+
+            default:
+                printf("No contamos con esa opcion\n");
+                m=10;
+            break;
+        }
+        fd2=open("newdata",O_WRONLY);
+        if(m==1||m==2){
+            sprintf(data,"%i",res);
+            write(fd2,data,sizeof(data));
+            close(fd2);
+        }else{
+            write(fd2,inv,sizeof(inv));
+            close(fd2);
+        }
+    }else if(strcmp(cad,cad2)==0){
+        sprintf(menu,"10");
+        write(fd2,menu,sizeof(menu));
+        close(fd2);
+    }
+    
+    
+}
+
+
+//borrar articulo
+deleteArticulo(){
+    char data[50],sql[1024],idcad[10],menu[5],cad[1024],cad2[1024],deuda[100];
+    int c1, c2,c3,m;
+    printf("*******Borrar Articulo********* \n");
+    printf("-----------------------------------\n");
+    printf("Inserte el id del articulo:");
+    scanf("%s",&idcad);
+
+    fd2=open("IdArticulo",O_WRONLY);
+    write(fd2,idcad,sizeof(idcad));
+    close(fd2);
+
+    fd1=open("lista2",O_RDONLY);
+    read(fd1,cad,sizeof(cad));
+    close(fd1);
+    printf("--------------------DATOS DEL Articulo %s--------------------------\n",idcad);
+    printf("%s\n",cad);
+    //sprintf(cad2,"%s",cad);
+    //*Verificamos que exista el articulo
+    for (int indice = 0; cad[indice] != '\0'; ++indice){
+		c1=indice;
+	}
+    for (int indice = 0; cad2[indice] != '\0'; ++indice){
+		c2=indice;
+	}
+    //*SI encuentra al cliente
+    if(c1!=c2){
+        printf("Articulo eliminado\n");
+
+    }else if(strcmp(cad,cad2)==0){
+        printf("No está el Articulo en la lista\n");
+    }
+
+    
+}
+
+//!Seccion de ventaas
+menuVentas(){
+    int menu;
+    char txt[5];
+    clock_t begin;
+    clock_t end;
+    fd2=open("menu1",O_WRONLY);
+    printf("------------------------------------\n");
+    printf("                VENTAS              \n");
+    printf("------------------------------------\n");
+    printf("|1-Lista de ventas hechas          |\n");
+    printf("|2-Datos de una venta              |\n");
+    printf("|3-Mostrar facturas                |\n");
+    printf("|4-Mostrar Facturas con credito    |\n");
+    printf("|5-Mostrar Facturas con descuento  |\n");
+    printf("|6-Mostrar articulo más vendido    |\n");
+    printf("|7-Mostrar articulo menos vendido  |\n");
+    printf("|8-Realizar una venta              |\n");
+    printf("|9-Salir                           |\n");
+    printf("------------------------------------\n");
+    scanf("%i",&menu);
+    fd2=open("menu1",O_WRONLY);
+    switch(menu){
+        
+        //*Lista de ventas hechas 
+        case 1:
+            begin=clock();
+            sprintf(txt,"14");
+            write(fd2,txt,sizeof(txt));
+            close(fd2);
+            showdata(4);
+            end=clock();
+            tiempo+=(double)(end-begin)/CLOCKS_PER_SEC;
+        break;
+        //*lista de unq venta
+        case 2:
+            begin=clock();
+            sprintf(txt,"15");
+            write(fd2,txt,sizeof(txt));
+            close(fd2);
+            showdata(4);
+            end=clock();
+            tiempo+=(double)(end-begin)/CLOCKS_PER_SEC;
+        break;
+        //*Mostrar facutras
+        case 3:
+            begin=clock();
+            sprintf(txt,"16");
+            write(fd2,txt,sizeof(txt));
+            close(fd2);
+            showdata(5);
+            end=clock();
+            tiempo+=(double)(end-begin)/CLOCKS_PER_SEC;
+        break;
+        //*mostrar facturas con credito
+        case 4:
+            begin=clock();
+            sprintf(txt,"17");
+            write(fd2,txt,sizeof(txt));
+            close(fd2);
+            showdata(5);
+            end=clock();
+            tiempo+=(double)(end-begin)/CLOCKS_PER_SEC;
+        break;
+        //*mostrar facturas con descuento
+        case 5:
+            begin=clock();
+            sprintf(txt,"18");
+            write(fd2,txt,sizeof(txt));
+            close(fd2);
+            showdata(5);
+            end=clock();
+            tiempo+=(double)(end-begin)/CLOCKS_PER_SEC;
+        break;
+        //*mostrar articulo más vendido
+        case 6:
+            begin=clock();
+            sprintf(txt,"19");
+            write(fd2,txt,sizeof(txt));
+            close(fd2);
+            showdata(3);
+            end=clock();
+            tiempo+=(double)(end-begin)/CLOCKS_PER_SEC;
+        break;
+        //*mostrar  articulos menos vendidos
         case 7:
+            begin=clock();
+            sprintf(txt,"20");
+            write(fd2,txt,sizeof(txt));
+            close(fd2);
+            showdata(3);
+            end=clock();
+            tiempo+=(double)(end-begin)/CLOCKS_PER_SEC;
+        break;
+        //*Venta de un articulo
+        case 8:
+            begin=clock();
+            sprintf(txt,"21");
+            write(fd2,txt,sizeof(txt));
+            close(fd2);
+            addarti();
+            end=clock();
+            tiempo+=(double)(end-begin)/CLOCKS_PER_SEC;
+        break;
+        //*regresar al menu principal
+        case 9:
             printf("||||||....Regresando al menu principal.....|||||\n");
         break;
     }
